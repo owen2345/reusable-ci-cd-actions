@@ -1,17 +1,17 @@
 on:
-  # Any pull request merged into master (hotfixes, releases)
-  #   should publish the corresponding github release + git tag
-  push:
-    branches:
-      - main
-      - master
+#  # Any pull request merged into master (hotfixes, releases)
+#  #   should publish the corresponding github release + git tag
+#  push:
+#    branches:
+#      - main
+#      - master
 
-  workflow_dispatch: # build a new release manually (create release branch pointing to master branch)
-    inputs:
-      version_name:
-        # Edit release_builder.json#base_branches to support other branches
-        description: 'Release version name, sample: 1.0.0 (Only "develop" branch is supported)'
-        required: true
+#  workflow_dispatch: # build a new release manually (create release branch pointing to master branch)
+#    inputs:
+#      version_name:
+#        # Edit release_builder.json#base_branches to support other branches
+#        description: 'Release version name, sample: 1.0.0 (Only "develop" branch is supported)'
+#        required: true
 
   # Make workflow reusable
   workflow_call:
@@ -25,19 +25,13 @@ jobs:
     env:
       PUBLISH_RELEASE: ${{ github.event_name == 'push' }}
       A_RELEASE_MERGE: ${{ github.event.head_commit && startsWith(github.event.head_commit.message, 'Merge pull request') }}
-    #if: github.event.inputs || ( github.event.head_commit && startsWith(github.event.head_commit.message, 'Merge pull request') )
+    if: github.event.inputs || ( github.event.head_commit && startsWith(github.event.head_commit.message, 'Merge pull request') )
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
-      - name: delete me
-        env:
-          SMAPLE: ${{ github.event.inputs && github.event.inputs.version_name }}
-          SMAPLE2: ${{ inputs.version_name }}
-        run: echo ":::::::$SMAPLE---$SMAPLE2"
 
       # calculate versions
       - name: Calculate new version from release candidate (creating release)
