@@ -1,0 +1,46 @@
+name: App tests
+on:
+  pull_request:
+
+jobs:
+  rspec:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_CLIENT_TIMEOUT: 120
+      COMPOSE_HTTP_TIMEOUT: 120
+    steps:
+      # common steps
+      - uses: actions/checkout@v2
+      - run: cp .env-example .env
+      - name: Cancel previous Workflow Actions
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{ github.token }}
+      # docker caching
+      - name: download docker-compose cache
+        run: docker-compose pull
+      - uses: satackey/action-docker-layer-caching@v0.0.11 # Cache or restore docker cache
+        continue-on-error: true # Ignore the failure of a step and avoid terminating the job.
+        with:
+          key: app-cache-${{ hashFiles('Dockerfile', 'Gemfile.lock', 'yarn.lock') }}
+          restore-keys: app-cache-${{ hashFiles('Dockerfile', 'Gemfile.lock', 'yarn.lock') }}
+
+      - name: Prepare DB
+        run: docker-compose run test /bin/sh -c "sleep 5 && bundle exec rails db:setup"
+      - name: Run tests
+        run: docker-compose run test /bin/sh -c "yarn install && yarn build && yarn build:css && bundle exec rspec"
+      - name: Code style (Backend)
+        run: docker-compose run test /bin/sh -c "bundle exec rubocop"
+      - name: Code style (Frontend)
+        run: docker-compose run test /bin/sh -c "yarn tests"
+
+      - name: Upload final coverage results
+        uses: actions/upload-artifact@master
+        with:
+          name: final-coverage-report
+          path: coverage
+      - name: Simplecov Report
+        uses: aki77/simplecov-report-action@v1
+        with:
+          failedThreshold: 90
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,77 @@
+name: "Continuous Deployment"
+on:
+  # triggered once "App tests" (tests.yml) successfully completed for any release (auto deploy to staging)
+  workflow_run:
+    workflows: [ "App tests" ]
+    branches: [ "release/**" ]
+    types:
+      - completed
+
+  # when release PR OR Hotfix was merged, then deploy to production
+  push:
+    branches:
+      - main
+      - master
+
+  # manually deploy any branch to a specific environment
+  workflow_dispatch:
+    inputs:
+      deploy_env:
+        type: choice
+        required: true
+        default: 'beta'
+        options:
+          - beta
+          - beta2
+          - production
+        description: 'Deploy environment (Beta2 maybe not configured for the current app)'
+
+  # Make workflow reusable
+  workflow_call:
+    secrets:
+      PROD_GOOGLE_AUTH:
+        required: true
+      BETA_GOOGLE_AUTH:
+        required: true
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+      github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
+    env:
+      PROD_DEPLOY: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_env == 'production') || github.event_name == 'push' }}
+      STAGING_DEPLOY: ${{ github.event_name == 'workflow_run' || (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_env != 'production') }}
+      STAGING_DEPLOY_ENV: ${{github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_env || 'beta'}}
+      DEPLOY_BRANCH: ${{github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.ref}}
+    steps:
+      # common steps
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ env.DEPLOY_BRANCH }}
+      - name: Cancel previous Workflow Actions
+        uses: styfle/cancel-workflow-action@0.6.0
+        with:
+          access_token: ${{ github.token }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+      - uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
+        with:
+          key: CD-docker-cache-${{ hashFiles('Dockerfile', 'Gemfile.lock') }}
+
+      - run: sudo gem install kubernetes_helper
+      - name: Staging deployment
+        env: # Env variable saved in github that contains gcloud credential (json format)
+          KB_AUTH_TOKEN: ${{ secrets.BETA_GOOGLE_AUTH }}
+          DEPLOY_ENV: ${{ env.STAGING_DEPLOY_ENV }}
+        run: kubernetes_helper run_deployment 'cd.sh'
+        if: ${{ env.STAGING_DEPLOY == 'true' }}
+
+      - name: Production deployment
+        env:
+          KB_AUTH_TOKEN: ${{ secrets.PROD_GOOGLE_AUTH }}
+          DEPLOY_ENV: production
+        run: kubernetes_helper run_deployment 'cd.sh'
+        if: ${{ env.PROD_DEPLOY == 'true' }}
