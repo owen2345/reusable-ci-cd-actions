@@ -1,6 +1,50 @@
-name: App tests
-on:
-  pull_request:
+#name: App tests
+#on: # Run tests for all pull requests
+#  pull_request:
+
+
+# Make workflow reusable
+workflow_call:
+  inputs:
+    copy_env:
+      type: boolean
+      required: false
+      default: false
+    run_rubocop:
+      type: boolean
+      required: false
+      default: true
+
+    frontend_tests:
+      type: boolean
+      required: false
+      default: false
+    frontend_tests_cmd:
+      type: string
+      required: false
+      default: yarn test
+
+    run_eslint:
+      type: boolean
+      required: false
+      default: false
+    eslint_cmd:
+      type: string
+      required: false
+      default: yarn eslint
+
+    rspec_cmd:
+      type: string
+      required: false
+      default: bundle exec rspec
+    publish_coverage:
+      type: boolean
+      required: false
+      default: true
+
+  secrets:
+    CC_TEST_REPORTER_ID:
+      required: false
 
 jobs:
   rspec:
@@ -12,10 +56,12 @@ jobs:
       # common steps
       - uses: actions/checkout@v2
       - run: cp .env-example .env
+        if: inputs.copy_env
       - name: Cancel previous Workflow Actions
         uses: styfle/cancel-workflow-action@0.6.0
         with:
           access_token: ${{ github.token }}
+
       # docker caching
       - name: download docker-compose cache
         run: docker-compose pull
@@ -27,20 +73,48 @@ jobs:
 
       - name: Prepare DB
         run: docker-compose run test /bin/sh -c "sleep 5 && bundle exec rails db:setup"
-      - name: Run tests
-        run: docker-compose run test /bin/sh -c "yarn install && yarn build && yarn build:css && bundle exec rspec"
+      - name: Check frontend tests
+        env:
+          TESTS_CMD: ${{ inputs.frontend_tests_cmd }}
+        run: docker-compose run test /bin/sh -c "$TESTS_CMD"
+        if: inputs.frontend_tests
+
+      - name: Check Rspec tests
+        TESTS_CMD: ${{ inputs.rspec_cmd }}
+        run: docker-compose run test /bin/sh -c "$TESTS_CMD"
+
       - name: Code style (Backend)
         run: docker-compose run test /bin/sh -c "bundle exec rubocop"
+        if: inputs.run_rubocop
+
       - name: Code style (Frontend)
-        run: docker-compose run test /bin/sh -c "yarn tests"
+        run: docker-compose run test /bin/sh -c "$ESLINT_CMD"
+        env:
+          ESLINT_CMD: ${{ inputs.eslint_cmd }}
+        if: inputs.run_eslint
 
       - name: Upload final coverage results
         uses: actions/upload-artifact@master
         with:
           name: final-coverage-report
           path: coverage
+        if: inputs.publish_coverage
+
       - name: Simplecov Report
         uses: aki77/simplecov-report-action@v1
         with:
           failedThreshold: 90
           token: ${{ secrets.GITHUB_TOKEN }}
+        if: inputs.publish_coverage
+
+      - name: Upload results to codeclimate # requires github->secrets->CC_TEST_REPORTER_ID
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        run: |
+          docker-compose run test bash -c "
+            apt-get install wget -y &&
+            wget -O ./cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 &&  chmod +x ./cc-test-reporter &&
+            ./cc-test-reporter format-coverage -t simplecov -o coverage/codeclimate.json &&
+            ./cc-test-reporter upload-coverage -i coverage/codeclimate.json
+          "
+        if: secrets.CC_TEST_REPORTER_ID
