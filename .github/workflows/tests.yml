@@ -91,7 +91,8 @@ jobs:
         if: inputs.frontend_tests
 
       - name: Check Rspec tests
-        TESTS_CMD: ${{ inputs.rspec_cmd }}
+        env:
+          TESTS_CMD: ${{ inputs.rspec_cmd }}
         run: docker-compose run test /bin/sh -c "$TESTS_CMD"
 
       - name: Code style (Backend)
@@ -128,4 +129,4 @@ jobs:
             ./cc-test-reporter format-coverage -t simplecov -o coverage/codeclimate.json &&
             ./cc-test-reporter upload-coverage -i coverage/codeclimate.json
           "
-        if: secrets.CC_TEST_REPORTER_ID
+        if: ${{ secrets.CC_TEST_REPORTER_ID }}
