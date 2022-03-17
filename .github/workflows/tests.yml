@@ -9,6 +9,10 @@ workflow_call:
     copy_env:
       type: boolean
       required: false
+      default: true
+    copy_db_yml:
+      type: boolean
+      required: false
       default: false
     run_rubocop:
       type: boolean
@@ -41,6 +45,10 @@ workflow_call:
       type: boolean
       required: false
       default: true
+    min_coverage:
+      type: number
+      required: false
+      default: 90
 
   secrets:
     CC_TEST_REPORTER_ID:
@@ -57,6 +65,9 @@ jobs:
       - uses: actions/checkout@v2
       - run: cp .env-example .env
         if: inputs.copy_env
+      - name: Copy DB Config
+        run: cp config/database-example.yml config/database.yml
+        if: inputs.copy_db_yml
       - name: Cancel previous Workflow Actions
         uses: styfle/cancel-workflow-action@0.6.0
         with:
@@ -103,7 +114,7 @@ jobs:
       - name: Simplecov Report
         uses: aki77/simplecov-report-action@v1
         with:
-          failedThreshold: 90
+          failedThreshold: ${{ inputs.min_coverage }}
           token: ${{ secrets.GITHUB_TOKEN }}
         if: inputs.publish_coverage
 
