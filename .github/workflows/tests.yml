@@ -1,58 +1,58 @@
-#name: App tests
-#on: # Run tests for all pull requests
+name: App tests
+on:
+## Run tests for all pull requests
 #  pull_request:
 
+  # Make workflow reusable
+  workflow_call:
+    inputs:
+      copy_env:
+        type: boolean
+        required: false
+        default: true
+      copy_db_yml:
+        type: boolean
+        required: false
+        default: false
+      run_rubocop:
+        type: boolean
+        required: false
+        default: true
 
-# Make workflow reusable
-workflow_call:
-  inputs:
-    copy_env:
-      type: boolean
-      required: false
-      default: true
-    copy_db_yml:
-      type: boolean
-      required: false
-      default: false
-    run_rubocop:
-      type: boolean
-      required: false
-      default: true
+      frontend_tests:
+        type: boolean
+        required: false
+        default: false
+      frontend_tests_cmd:
+        type: string
+        required: false
+        default: yarn test
 
-    frontend_tests:
-      type: boolean
-      required: false
-      default: false
-    frontend_tests_cmd:
-      type: string
-      required: false
-      default: yarn test
+      run_eslint:
+        type: boolean
+        required: false
+        default: false
+      eslint_cmd:
+        type: string
+        required: false
+        default: yarn eslint
 
-    run_eslint:
-      type: boolean
-      required: false
-      default: false
-    eslint_cmd:
-      type: string
-      required: false
-      default: yarn eslint
+      rspec_cmd:
+        type: string
+        required: false
+        default: bundle exec rspec
+      publish_coverage:
+        type: boolean
+        required: false
+        default: true
+      min_coverage:
+        type: number
+        required: false
+        default: 90
 
-    rspec_cmd:
-      type: string
-      required: false
-      default: bundle exec rspec
-    publish_coverage:
-      type: boolean
-      required: false
-      default: true
-    min_coverage:
-      type: number
-      required: false
-      default: 90
-
-  secrets:
-    CC_TEST_REPORTER_ID:
-      required: false
+    secrets:
+      CC_TEST_REPORTER_ID:
+        required: false
 
 jobs:
   rspec:

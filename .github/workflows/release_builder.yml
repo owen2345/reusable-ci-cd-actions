@@ -1,3 +1,4 @@
+name: Create Release
 on:
 #  # Any pull request merged into master (hotfixes, releases)
 #  #   should publish the corresponding github release + git tag
@@ -15,8 +16,6 @@ on:
 
   # Make workflow reusable
   workflow_call:
-
-name: Create Release
 
 jobs:
   build:
