@@ -87,6 +87,7 @@ jobs:
         env:
           CHANGES: ${{steps.build_changelog.outputs.changelog}}
       - name: Create Pull Request
+        id: cpr
         uses: gr2m/create-or-update-pull-request-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -105,18 +106,19 @@ jobs:
       # PRs created by github workflows can not run automatically: https://github.com/peter-evans/create-pull-request/issues/48
       - name: Post release message
         uses: actions/github-script@v6
+        env:
+          PULL_REQUEST_ID: ${{steps.cpr.outputs.pull-request-number}}
+          MESSAGE: |
+            **Pull requests created by workflows can not automatically run the PR tests. To fix this issue, add an empty commit like:** `git checkout release/${{ env.NEW_VERSION }} && git commit --allow-empty -m 'Enable PR workflows' && git push`
         with:
           script: |
             github.rest.issues.createComment({
-              issue_number: context.issue.number,
+              issue_number: process.env.PULL_REQUEST_ID,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `Pull requests created by workflows can not automatically run tests.
-                     To fix this issue, add an empty commit like:
-                     "git checkout $BRANCH_NAME && git commit --allow-empty -m \"enable workflows\" && git push"
-                     Issue url: https://github.com/peter-evans/create-pull-request/issues/48`
+              body: process.env.MESSAGE
             })
-        if: ${{ env.PUBLISH_RELEASE == 'false' }}
+        if: ${{ env.PUBLISH_RELEASE == 'false' && steps.cpr.outputs.pull-request-number }}
 
       # Publish release
       - name: Publish git tag
