@@ -111,10 +111,10 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'Pull requests created by workflows can not automatically run tests.
+              body: `Pull requests created by workflows can not automatically run tests.
                      To fix this issue, add an empty commit like:
                      "git checkout $BRANCH_NAME && git commit --allow-empty -m \"enable workflows\" && git push"
-                     Issue url: https://github.com/peter-evans/create-pull-request/issues/48'
+                     Issue url: https://github.com/peter-evans/create-pull-request/issues/48`
             })
         if: ${{ env.PUBLISH_RELEASE == 'false' }}
 
