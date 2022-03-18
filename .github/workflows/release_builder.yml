@@ -103,10 +103,19 @@ jobs:
             ${{ steps.build_changelog.outputs.changelog }}
 
       # PRs created by github workflows can not run automatically: https://github.com/peter-evans/create-pull-request/issues/48
-      - name: "Print Release post action"
-        env:
-          BRANCH_NAME: release/${{ env.NEW_VERSION }}
-        run: echo "::warning title=Release Candidate ::Release PR has been created, to fix github issue do 'git checkout $BRANCH_NAME && git commit --allow-empty -m \"enable workflows\" && git push'"
+      - name: Post release message
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Pull requests created by workflows can not automatically run tests.
+                     To fix this issue, add an empty commit like:
+                     "git checkout $BRANCH_NAME && git commit --allow-empty -m \"enable workflows\" && git push"
+                     Issue url: https://github.com/peter-evans/create-pull-request/issues/48'
+            })
         if: ${{ env.PUBLISH_RELEASE == 'false' }}
 
       # Publish release
