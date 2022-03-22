@@ -1,31 +1,5 @@
 name: "Continuous Deployment"
 on:
-#  # triggered once "App tests" (tests.yml) successfully completed for any release (auto deploy to staging)
-#  workflow_run:
-#    workflows: [ "App tests" ]
-#    branches: [ "release/**" ]
-#    types:
-#      - completed
-#
-#  # when release PR OR Hotfix was merged, then deploy to production
-#  push:
-#    branches:
-#      - main
-#      - master
-#
-#  # manually deploy any branch to a specific environment
-#  workflow_dispatch:
-#    inputs:
-#      deploy_env:
-#        type: choice
-#        required: true
-#        default: 'beta'
-#        options:
-#          - beta
-#          - beta2
-#          - production
-#        description: 'Deploy environment (Beta2 maybe not configured for the current app)'
-
   # Make workflow reusable
   workflow_call:
     secrets:

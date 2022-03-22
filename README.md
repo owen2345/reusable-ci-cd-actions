@@ -11,6 +11,8 @@ This is a repository to host all shareable github workflows
 
 ## Continuous Deployment
 <img src="docs/cd-manually.png" alt="Deploy to any branch" width="100%" />
+    
+** Note: Continuous deployment process depends on `Kubernetes_helper` gem to run the corresponding deployment [(See documentation)](https://github.com/owen2345/kubernetes_helper)      
 - The ability to manually deploy any branch to any environment
 
 ### Production deployment
