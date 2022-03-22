@@ -41,6 +41,10 @@ on:
         type: string
         required: false
         default: bundle exec rspec
+      prepare_db_cmd:
+        type: string
+        required: false
+        default: bundle exec rails db:setup
       publish_coverage:
         type: boolean
         required: false
@@ -84,7 +88,10 @@ jobs:
           restore-keys: app-cache-${{ hashFiles('Dockerfile', 'Gemfile.lock', 'yarn.lock') }}
 
       - name: Prepare DB
-        run: docker-compose run test /bin/sh -c "sleep 5 && bundle exec rails db:setup"
+        env:
+          ACTION_CMD: ${{ inputs.prepare_db_cmd }}
+        run: docker-compose run test /bin/sh -c "sleep 5 && $ACTION_CMD"
+
       - name: Check frontend tests
         env:
           TESTS_CMD: ${{ inputs.frontend_tests_cmd }}
