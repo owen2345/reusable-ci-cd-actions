@@ -73,7 +73,7 @@ jobs:
       # building release
       - name: Download release builder config
         run: |
-          apt-get install curl -y
+          sudo apt-get install curl -y
           curl https://github.com/ReverseRetail/shareable-github-workflows/raw/main/.github/workflows/release_builder.json --output .github/workflows/release_builder.json
       - name: "Build Changelog"
         id: build_changelog
