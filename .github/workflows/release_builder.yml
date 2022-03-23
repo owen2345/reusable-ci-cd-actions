@@ -71,10 +71,10 @@ jobs:
           git push --tags
 
       # building release
-      - name: Download release builder config
+      - name: Download release builder config (Fix missing config file)
         run: |
           sudo apt-get install curl -y
-          curl https://github.com/ReverseRetail/shareable-github-workflows/raw/main/.github/workflows/release_builder.json --output .github/workflows/release_builder.json
+          curl https://raw.githubusercontent.com/ReverseRetail/shareable-github-workflows/main/.github/workflows/release_builder.json --output .github/workflows/release_builder.json
       - name: "Build Changelog"
         id: build_changelog
         uses: mikepenz/release-changelog-builder-action@v1
@@ -84,7 +84,8 @@ jobs:
           toTag: ${{env.NEW_VERSION}}.draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: rm -f .github/workflows/release_builder.json
+      - name: Remove downloaded builder config (fix)
+        run: rm -f .github/workflows/release_builder.json
 
       - name: Update changelog file
         run: echo "$(echo -e "# Release $NEW_VERSION($(date +%F))\n$CHANGES\n"; cat CHANGELOG.md)" > CHANGELOG.md
