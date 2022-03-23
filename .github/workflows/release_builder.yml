@@ -84,6 +84,7 @@ jobs:
           toTag: ${{env.NEW_VERSION}}.draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: rm -f .github/workflows/release_builder.json
 
       - name: Update changelog file
         run: echo "$(echo -e "# Release $NEW_VERSION($(date +%F))\n$CHANGES\n"; cat CHANGELOG.md)" > CHANGELOG.md
