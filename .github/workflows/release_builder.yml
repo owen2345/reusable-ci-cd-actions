@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PUBLISH_RELEASE: ${{ github.event_name == 'push' }}
-      A_RELEASE_MERGE: ${{ github.event.head_commit && startsWith(github.event.head_commit.message, 'Merge pull request') }}
+      A_RELEASE_MERGE: ${{ github.event.head_commit && contains(github.event.head_commit.message, format('from {0}/{1}/', github.repository_owner, 'release')) }}
     if: github.event.inputs || ( github.event.head_commit && startsWith(github.event.head_commit.message, 'Merge pull request') )
 
     steps:
