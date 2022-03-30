@@ -50,7 +50,7 @@ jobs:
           echo "NEW_VERSION=${array[-1]}" >> $GITHUB_ENV
         if: ${{ env.A_RELEASE_MERGE == 'true' && !env.NEW_VERSION }}
 
-      - name: Calculate new version from current tag (when hotfix was merged)
+      - name: Detect current version
         run: |
           if [[ "$(git tag | wc -l | sed 's/^ *//g')" = '0' ]]
           then
@@ -58,15 +58,16 @@ jobs:
           else
             last_tag=$(git describe --abbrev=0 --tags `git rev-list --tags --skip=0 --max-count=1`)
           fi
-          IFS='.' read -r -a array <<< "$last_tag" &&
+          echo "CURRENT_VERSION=$last_tag" >> $GITHUB_ENV
+
+      - name: Calculate new version from current tag (when hotfix was merged)
+        env:
+          CURRENT_VERSION: ${{ env.CURRENT_VERSION }}
+        run: |
+          IFS='.' read -r -a array <<< "$CURRENT_VERSION" &&
           result="${array[0]:-0}.${array[1]:-0}.$(expr "${array[2]:-0}" + 1)"  &&
           echo "NEW_VERSION=$result" >> $GITHUB_ENV
         if: ${{ env.A_RELEASE_MERGE != 'true' && !env.NEW_VERSION }}
-
-      - name: Detect last version
-        run: |
-          result=$(git describe --abbrev=0 --tags `git rev-list --tags --skip=0 --max-count=1`) &&
-          echo "CURRENT_VERSION=$result" >> $GITHUB_ENV
 
       - name: Create temp git tag (draft)
         run: |
