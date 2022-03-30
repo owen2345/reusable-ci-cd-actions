@@ -24,7 +24,8 @@ This is a repository to host all shareable github workflows
 - Run deployment when manually triggered to "beta" or "beta2" environment (TODO: rename `beta` into `staging`)
 
 ## Release management
-<img src="docs/release-builder.png" alt="Release builder" width="100%" />
+<img src="docs/release-builder.png" alt="Release builder" width="100%" />    
+
 - The ability to generate manually a new release candidate
     - Create automatically the corresponding Release PullRequest against master/main branch
     - Add automatically all changes as the PullRequest description
