@@ -30,7 +30,7 @@ This is a repository to host all shareable github workflows
     - Create automatically the corresponding Release PullRequest against master/main branch
     - Add automatically all changes as the PullRequest description
     - Update automatically the changelog file with all PullRequest titles between the previous release     
-    ** Note: There is an issue for PRs created by workflows: The actions do not start automatically (tests), an empty commit or any commit is required to fix it. Issue: https://github.com/peter-evans/create-pull-request/issues/48
+    ** Note: There is an issue for PRs created by workflows: The actions do not start automatically (tests), an empty commit or any commit is required to fix it (The created PR includes a message with instructions). Issue: https://github.com/peter-evans/create-pull-request/issues/48
 
 - Once a release candidate has been merged:
     - create the corresponding git tag
