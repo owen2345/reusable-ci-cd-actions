@@ -18,25 +18,6 @@ on:
         type: boolean
         required: false
         default: true
-
-      frontend_tests:
-        type: boolean
-        required: false
-        default: false
-      frontend_tests_cmd:
-        type: string
-        required: false
-        default: yarn test
-
-      run_eslint:
-        type: boolean
-        required: false
-        default: false
-      eslint_cmd:
-        type: string
-        required: false
-        default: yarn eslint
-
       rspec_cmd:
         type: string
         required: false
@@ -45,6 +26,14 @@ on:
         type: string
         required: false
         default: bundle exec rails db:setup
+
+      frontend_tests_cmd:
+        type: string
+        required: false
+      eslint_cmd:
+        type: string
+        required: false
+
       publish_coverage:
         type: boolean
         required: false
@@ -96,12 +85,13 @@ jobs:
         env:
           TESTS_CMD: ${{ inputs.frontend_tests_cmd }}
         run: docker-compose run test /bin/sh -c "$TESTS_CMD"
-        if: inputs.frontend_tests
+        if: inputs.frontend_tests_cmd
 
       - name: Check Rspec tests
         env:
           TESTS_CMD: ${{ inputs.rspec_cmd }}
         run: docker-compose run test /bin/sh -c "$TESTS_CMD"
+        if: inputs.rspec_cmd
 
       - name: Code style (Backend)
         run: docker-compose run test /bin/sh -c "bundle exec rubocop"
@@ -111,7 +101,7 @@ jobs:
         run: docker-compose run test /bin/sh -c "$ESLINT_CMD"
         env:
           ESLINT_CMD: ${{ inputs.eslint_cmd }}
-        if: inputs.run_eslint
+        if: inputs.eslint_cmd
 
       - name: Upload final coverage results
         uses: actions/upload-artifact@master
