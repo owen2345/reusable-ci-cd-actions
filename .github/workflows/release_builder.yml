@@ -106,7 +106,7 @@ jobs:
           commit-message: Release ${{ env.NEW_VERSION }}
           labels: release
           title: "Release ${{ env.NEW_VERSION }}"
-          base: master
+          base: ${{ github.base.repo.default_branch }}
           branch: "release/${{ env.NEW_VERSION }}"
           delete-branch: true
           assignees: "${{github.actor}}"
