@@ -98,38 +98,38 @@ jobs:
         if: ${{ env.PUBLISH_RELEASE == 'false' }}
         env:
           CHANGES: ${{steps.build_changelog.outputs.changelog}}
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v4
-        if: ${{ env.PUBLISH_RELEASE == 'false' }}
-        with:
-          commit-message: Release ${{ env.NEW_VERSION }}
-          labels: release
-          title: "Release ${{ env.NEW_VERSION }}"
-          base: ${{ github.head.repo.default_branch }}
-          branch: "release/${{ env.NEW_VERSION }}"
-          delete-branch: true
-          assignees: "${{github.actor}}"
-          body: |
-            # Release ${{ env.NEW_VERSION }}
-            ## Included Pull Requests
-            ${{ steps.build_changelog.outputs.changelog }}
 #      - name: Create Pull Request
 #        id: cpr
-#        uses: gr2m/create-or-update-pull-request-action@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        uses: peter-evans/create-pull-request@v4
 #        if: ${{ env.PUBLISH_RELEASE == 'false' }}
 #        with:
 #          commit-message: Release ${{ env.NEW_VERSION }}
 #          labels: release
-#          branch: "release/${{ env.NEW_VERSION }}"
-#          assignees: "${{github.actor}}"
 #          title: "Release ${{ env.NEW_VERSION }}"
+#          base: ${{ github.head.repo.default_branch }}
+#          branch: "release/${{ env.NEW_VERSION }}"
+#          delete-branch: true
+#          assignees: "${{github.actor}}"
 #          body: |
 #            # Release ${{ env.NEW_VERSION }}
 #            ## Included Pull Requests
 #            ${{ steps.build_changelog.outputs.changelog }}
+      - name: Create Pull Request
+        id: cpr
+        uses: gr2m/create-or-update-pull-request-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ env.PUBLISH_RELEASE == 'false' }}
+        with:
+          commit-message: Release ${{ env.NEW_VERSION }}
+          labels: release
+          branch: "release/${{ env.NEW_VERSION }}"
+          assignees: "${{github.actor}}"
+          title: "Release ${{ env.NEW_VERSION }}"
+          body: |
+            # Release ${{ env.NEW_VERSION }}
+            ## Included Pull Requests
+            ${{ steps.build_changelog.outputs.changelog }}
 
       # PRs created by github workflows can not run automatically: https://github.com/peter-evans/create-pull-request/issues/48
       - name: Post release message
