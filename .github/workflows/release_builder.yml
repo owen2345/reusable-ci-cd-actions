@@ -110,6 +110,7 @@ jobs:
           branch: "release/${{ env.NEW_VERSION }}"
           assignees: "${{github.actor}}"
           title: "Release ${{ env.NEW_VERSION }}"
+          auto-merge: merge
           body: |
             # Release ${{ env.NEW_VERSION }}
             ## Included Pull Requests
