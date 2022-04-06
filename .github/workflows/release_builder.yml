@@ -32,6 +32,8 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: pull all changes
+        run: git fetch && git push
       # calculate versions
       - name: Calculate new version from release candidate (creating release)
         run: |
@@ -87,7 +89,7 @@ jobs:
         with:
           configuration: ".github/workflows/release_builder.json"
           fromTag: ${{env.CURRENT_VERSION}}
-          toTag: ${{env.NEW_VERSION}}.draft
+#          toTag: ${{env.NEW_VERSION}}.draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Remove downloaded builder config (fix)
