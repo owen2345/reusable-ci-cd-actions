@@ -43,6 +43,11 @@ on:
         required: false
         default: 90
 
+      debug:
+        type: boolean
+        required: false
+        default: false
+
     secrets:
       CC_TEST_REPORTER_ID:
         required: false
@@ -126,3 +131,7 @@ jobs:
             ./cc-test-reporter upload-coverage -i coverage/codeclimate.json
           "
         if: ${{ env.CC_TEST_REPORTER_ID != '' }}
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: inputs.debug && always()
