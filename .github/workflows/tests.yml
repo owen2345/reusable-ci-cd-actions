@@ -73,6 +73,12 @@ jobs:
           access_token: ${{ github.token }}
 
       # docker caching
+      - name: Cache ruby gems
+        uses: actions/cache@v3
+        with:
+          path: |
+            /usr/local/bundle/
+
       - name: download docker-compose cache
         run: docker-compose pull
       - uses: satackey/action-docker-layer-caching@v0.0.11 # Cache or restore docker cache
