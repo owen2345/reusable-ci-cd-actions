@@ -79,7 +79,7 @@ jobs:
         continue-on-error: true # Ignore the failure of a step and avoid terminating the job.
         with:
           key: app-cache-${{ hashFiles('Dockerfile', 'Gemfile.lock', 'yarn.lock') }}
-          #restore-keys: app-cache-
+          restore-keys: app-cache-${{ hashFiles('Dockerfile', 'Gemfile.lock', 'yarn.lock') }}
 
       - name: Prepare DB
         env:
