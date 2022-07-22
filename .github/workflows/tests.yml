@@ -10,23 +10,26 @@ on:
         type: boolean
         required: false
         default: true
+
+      # Backend
       copy_db_yml:
         type: boolean
         required: false
         default: false
-      run_rubocop:
-        type: boolean
-        required: false
-        default: true
-      rspec_cmd:
-        type: string
-        required: false
-        default: bundle exec rspec
       prepare_db_cmd:
         type: string
         required: false
         default: bundle exec rails db:setup
+      rspec_cmd:
+        type: string
+        required: false
+        default: bundle exec rspec
+      run_rubocop:
+        type: boolean
+        required: false
+        default: true
 
+      # Frontend
       frontend_tests_cmd:
         type: string
         required: false
@@ -34,6 +37,7 @@ on:
         type: string
         required: false
 
+      # test coverage
       publish_coverage:
         type: boolean
         required: false
@@ -88,10 +92,11 @@ jobs:
           key: app-cache-${{ hashFiles('Dockerfile', 'Gemfile.lock', 'yarn.lock') }}
           restore-keys: app-cache-${{ hashFiles('Dockerfile', 'Gemfile.lock', 'yarn.lock') }}
 
-      - name: Prepare DB
+      - name: Prepare backend DB
         env:
           ACTION_CMD: ${{ inputs.prepare_db_cmd }}
         run: docker-compose run test /bin/sh -c "sleep 5 && $ACTION_CMD"
+        if: inputs.prepare_db_cmd
 
       - name: Check frontend tests
         env:
@@ -99,7 +104,7 @@ jobs:
         run: docker-compose run test /bin/sh -c "$TESTS_CMD"
         if: inputs.frontend_tests_cmd
 
-      - name: Check Rspec tests
+      - name: Check backend tests
         env:
           TESTS_CMD: ${{ inputs.rspec_cmd }}
         run: docker-compose run test /bin/sh -c "$TESTS_CMD"
