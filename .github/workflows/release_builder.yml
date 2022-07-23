@@ -85,7 +85,7 @@ jobs:
       - name: Download release builder config (Fix missing config file)
         run: |
           sudo apt-get install curl -y
-          curl https://raw.githubusercontent.com/owen/reusable-ci-cd-actions/main/.github/workflows/release_builder.json --output .github/workflows/release_builder.json
+          curl https://raw.githubusercontent.com/owen2345/reusable-ci-cd-actions/main/.github/workflows/release_builder.json --output .github/workflows/release_builder.json
 #      - name: "Generate release changelog"
 #        id: build_changelog
 #        uses: heinrichreimer/github-changelog-generator-action@v2.3
