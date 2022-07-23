@@ -29,7 +29,7 @@ jobs:
     env:
       PUBLISH_RELEASE: ${{ github.event_name == 'push' }}
       A_RELEASE_MERGE: ${{ github.event.head_commit && contains(github.event.head_commit.message, format('from {0}/{1}/', github.repository_owner, 'release')) }}
-    if: github.event.inputs || ( github.event.head_commit && startsWith(github.event.head_commit.message, 'Merge pull request') )
+    #if: github.event.inputs || ( github.event.head_commit && startsWith(github.event.head_commit.message, 'Merge pull request') )
 
     steps:
       - name: Checkout code
@@ -93,7 +93,7 @@ jobs:
           configuration: ".github/workflows/release_builder.json"
           fromTag: ${{env.CURRENT_VERSION}}
           toTag: ${{env.NEW_VERSION}}.draft
-          commitMode: inputs.commit_mode
+          commitMode: ${{inputs.commit_mode}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Remove downloaded builder config (fix)
@@ -106,7 +106,7 @@ jobs:
           CHANGES: ${{steps.build_changelog.outputs.changelog}}
 
       - name: print changes
-        run: echo "CHANGES: $CHANGES"
+        run: "echo $CHANGES"
         env:
           CHANGES: ${{steps.build_changelog.outputs.changelog}}
 #      - name: Create Pull Request
