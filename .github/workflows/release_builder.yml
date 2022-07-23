@@ -86,16 +86,11 @@ jobs:
         run: |
           sudo apt-get install curl -y
           curl https://raw.githubusercontent.com/owen/shareable-github-workflows/main/.github/workflows/release_builder.json --output .github/workflows/release_builder.json
-      - name: "Build Changelog"
+      - name: "Generate release changelog"
         id: build_changelog
-        uses: mikepenz/release-changelog-builder-action@v3.1.1
+        uses: heinrichreimer/github-changelog-generator-action@v2.3
         with:
-          configuration: ".github/workflows/release_builder.json"
-          fromTag: ${{env.CURRENT_VERSION}}
-          toTag: ${{env.NEW_VERSION}}.draft
-          commitMode: ${{inputs.commit_mode}}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Remove downloaded builder config (fix)
         run: rm -f .github/workflows/release_builder.json
 
