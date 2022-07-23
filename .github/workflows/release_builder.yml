@@ -85,12 +85,25 @@ jobs:
       - name: Download release builder config (Fix missing config file)
         run: |
           sudo apt-get install curl -y
-          curl https://raw.githubusercontent.com/owen/shareable-github-workflows/main/.github/workflows/release_builder.json --output .github/workflows/release_builder.json
-      - name: "Generate release changelog"
+          curl https://raw.githubusercontent.com/owen/reusable-ci-cd-actions/main/.github/workflows/release_builder.json --output .github/workflows/release_builder.json
+#      - name: "Generate release changelog"
+#        id: build_changelog
+#        uses: heinrichreimer/github-changelog-generator-action@v2.3
+#        sinceTag: ${{env.CURRENT_VERSION}}
+#        with:
+#          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Build Changelog"
         id: build_changelog
-        uses: heinrichreimer/github-changelog-generator-action@v2.3
+        uses: mikepenz/release-changelog-builder-action@v3.1.1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          configuration: ".github/workflows/release_builder.json"
+          fromTag: ${{env.CURRENT_VERSION}}
+          toTag: ${{env.NEW_VERSION}}.draft
+          commitMode: ${{inputs.commit_mode}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Remove downloaded builder config (fix)
         run: rm -f .github/workflows/release_builder.json
 
