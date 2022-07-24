@@ -114,7 +114,7 @@ jobs:
           CHANGES: ${{steps.build_changelog.outputs.changelog}}
 
       - name: Generate Changelog2
-        uses: scottbrenner/generate-changelog-action@1.3.3
+        uses: scottbrenner/generate-changelog-action@v1.3.3
         id: Changelog
         with:
           from-tag: ${{env.CURRENT_VERSION}}
