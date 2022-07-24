@@ -2,7 +2,11 @@
   "categories": [
     {
       "title": "## Features",
-      "labels": ["Status: ready for review"]
+      "labels": ["Status: ready for review", "feat:", "feature:", "Feat:"]
+    },
+    {
+      "title": "## Fixes",
+      "labels": ["Fix:", "fix:"]
     },
     {
       "title": "## Other changes",

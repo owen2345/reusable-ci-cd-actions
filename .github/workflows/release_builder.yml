@@ -118,7 +118,7 @@ jobs:
         id: Changelog
         with:
           from-tag: ${{env.CURRENT_VERSION}}
-          to-tag: HEAD
+          to-tag: ${{env.NEW_VERSION}}.draft
 
       - name: print changes
         run: "echo $CHANGES==========$CHANGES2"
