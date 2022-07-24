@@ -113,9 +113,17 @@ jobs:
         env:
           CHANGES: ${{steps.build_changelog.outputs.changelog}}
 
+      - name: Generate Changelog2
+        uses: scottbrenner/generate-changelog-action@1.3.3
+        id: Changelog
+        with:
+          from-tag: ${{env.CURRENT_VERSION}}
+          to-tag: HEAD
+
       - name: print changes
-        run: "echo $CHANGES"
+        run: "echo $CHANGES==========$CHANGES2"
         env:
+          CHANGES2: ${{ steps.Changelog.outputs.changelog }}
           CHANGES: ${{steps.build_changelog.outputs.changelog}}
 #      - name: Create Pull Request
 #        id: cpr
