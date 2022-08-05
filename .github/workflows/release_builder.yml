@@ -61,22 +61,14 @@ jobs:
           fi
           echo "CURRENT_VERSION=$last_tag" >> $GITHUB_ENV
 
-      - name: Calculate new version from release candidate (creating release)
+      - name: Calculate new version from release candidate (when manually creating a release)
         env:
           ENTERED_VERSION: ${{ inputs.create_release_pr }}
         run: echo "NEW_VERSION=$ENTERED_VERSION" >> $GITHUB_ENV
         if: ${{ inputs.create_release_pr != '' }}
 
       # Sample: Merge pull request #36 from owen2345/release/0.2.0\n\nRelease 0.2.0
-      - name: Calculate new version from release candidate (when release was merged1111111)
-        env:
-          MERGE_MSG: ===${{github.event.head_commit.message}}===
-        run: |
-          IFS=$'\n' read -a array <<< "$MERGE_MSG" &&
-          result=${array[0]} &&
-          echo "$result"
-        if: ${{ env.A_RELEASE_MERGE == 'true' && !env.NEW_VERSION }}
-      - name: Calculate new version from release candidate (when release was merged)
+      - name: Calculate new version from release candidate (when merged a manually created release)
         env:
           MERGE_MSG: ${{github.event.head_commit.message}}
         run: |
