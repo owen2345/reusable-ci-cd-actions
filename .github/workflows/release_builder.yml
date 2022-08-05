@@ -70,11 +70,11 @@ jobs:
       # Sample: Merge pull request #36 from owen2345/release/0.2.0\n\nRelease 0.2.0
       - name: Calculate new version from release candidate (when release was merged1111111)
         env:
-          MERGE_MSG: ${{github.event.head_commit.message}}
+          MERGE_MSG: ===${{github.event.head_commit.message}}===
         run: |
           IFS=$'\n' read -d "\034" -r -a array <<< "$MERGE_MSG" &&
           result=${array[0]} &&
-          echo "NEW_VERSION2=$result" >> $GITHUB_ENV
+          echo "$result"
         if: ${{ env.A_RELEASE_MERGE == 'true' && !env.NEW_VERSION }}
       - name: Calculate new version from release candidate (when release was merged)
         env:
