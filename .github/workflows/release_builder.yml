@@ -134,7 +134,7 @@ jobs:
           title: "Release ${{ env.NEW_VERSION }}"
           body: |
             # Release ${{ env.NEW_VERSION }}
-            Changes included
+            ## ${{ inputs.commit_mode && 'Changes included' || 'Pull requests included' }}
             ${{ steps.build_changelog.outputs.changelog }}
 
             ## Manual action
@@ -155,6 +155,6 @@ jobs:
           name: Release ${{ env.NEW_VERSION }}
           tag: ${{ env.NEW_VERSION }}
           body: |
-            ## ${{ inputs.commit_mode && "Changes included" || "Pull requests included" }}
+            ## ${{ inputs.commit_mode && 'Changes included' || 'Pull requests included' }}
             ${{ steps.build_changelog.outputs.changelog }}
           token: ${{ secrets.GITHUB_TOKEN }}
