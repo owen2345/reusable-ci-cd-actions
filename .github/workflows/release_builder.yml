@@ -146,6 +146,8 @@ jobs:
             PRs created by github workflows can not run corresponding actions like tests automatically: https://github.com/peter-evans/create-pull-request/issues/48
 
       # ***** Publish release
+      - name: Set current
+        run: echo "CURRENT_DATE=$(date)" >> $GITHUB_ENV
       - name: Publish git tag
         uses: mathieudutour/github-tag-action@v5.6
         if: ${{ env.PUBLISH_RELEASE == 'true' }}
@@ -161,6 +163,6 @@ jobs:
           name: Release ${{ env.NEW_VERSION }}
           tag: ${{ env.NEW_VERSION }}
           body: |
-            ## ${{ inputs.commit_mode && 'Changes included' || 'Pull requests included' }} ($(date +%F))
+            ## ${{ inputs.commit_mode && 'Changes included' || 'Pull requests included' }} (${{env.CURRENT_DATE}})
             ${{ steps.build_changelog.outputs.changelog }}
           token: ${{ secrets.GITHUB_TOKEN }}
