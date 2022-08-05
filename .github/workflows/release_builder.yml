@@ -72,7 +72,7 @@ jobs:
         env:
           MERGE_MSG: ${{github.event.head_commit.message}}
         run: |
-          IFS="\n\n" read -r -a array <<< "$MERGE_MSG" &&
+          IFS="\n\n" read -d "\034" -r -a array <<< "$MERGE_MSG" &&
           result=${array[0]} &&
           IFS="/" read -r -a array <<< "$result" &&
           echo "NEW_VERSION=${array[-1]}" >> $GITHUB_ENV
