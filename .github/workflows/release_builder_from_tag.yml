@@ -1,0 +1,75 @@
+name: Create release from tag
+on:
+  push:
+    tags: # triggered once a git tag is published
+      - '*'
+
+  workflow_call:
+    inputs:
+      commit_mode:
+        type: boolean
+        required: false
+        default: true
+
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      # ******* calculate versions
+      - name: Detect previous version
+        run: |
+          if [[ "$(git tag | wc -l | sed 's/^ *//g')" = '1' ]]
+          then
+            tag='0.0.0'
+          else
+            tag="$(git describe --abbrev=0 --tags `git rev-list --tags --skip=1 --max-count=1`)"
+          fi
+          echo "PREVIOUS_VERSION=$tag" >> $GITHUB_ENV
+      - name: Detect current version
+        run: |
+          if [[ "$(git tag | wc -l | sed 's/^ *//g')" = '0' ]]
+          then
+            tag='0.0.1'
+          else
+            tag="$(git describe --abbrev=0 --tags `git rev-list --tags --skip=1 --max-count=0`)"
+          fi
+          echo "CURRENT_VERSION=$tag" >> $GITHUB_ENV
+      # ******* end calculate versions
+
+      # ***** generating changelogs
+      - name: Download release builder config (Fix missing config file)
+        run: |
+          sudo apt-get install curl -y
+          curl https://raw.githubusercontent.com/owen2345/reusable-ci-cd-actions/main/.github/workflows/release_builder.json --output .github/workflows/release_builder.json
+
+      - name: "Build Changelog"
+        id: build_changelog
+        uses: mikepenz/release-changelog-builder-action@v3.1.1
+        with:
+          configuration: ".github/workflows/release_builder.json"
+          fromTag: ${{env.PREVIOUS_VERSION}}
+          toTag: ${{env.CURRENT_VERSION}}
+          commitMode: ${{inputs.commit_mode}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Remove downloaded builder config (fix)
+        run: rm -f .github/workflows/release_builder.json
+
+      # ***** Publish release
+      - name: Publish release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          name: Release ${{ env.NEW_VERSION }}
+          tag: ${{ env.NEW_VERSION }}
+          body: |
+            ## ${{ inputs.commit_mode && 'Changes included' || 'Pull requests included' }} ($(date +%F))
+            ${{ steps.build_changelog.outputs.changelog }}
+          token: ${{ secrets.GITHUB_TOKEN }}
