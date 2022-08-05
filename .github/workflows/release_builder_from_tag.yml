@@ -63,13 +63,15 @@ jobs:
         run: rm -f .github/workflows/release_builder.json
 
       # ***** Publish release
+      - name: Set current date as env variable
+        run: echo "NOW::$(date +'%Y-%m-%dT%H:%M')" >> $GITHUB_ENV
       - name: Publish release
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          name: Release ${{ env.NEW_VERSION }}
-          tag: ${{ env.NEW_VERSION }}
+          name: Release ${{ env.CURRENT_VERSION }}
+          tag: ${{ env.CURRENT_VERSION }}
           body: |
-            ## ${{ inputs.commit_mode && 'Changes included' || 'Pull requests included' }} ($(date +%F))
+            ## ${{ inputs.commit_mode && 'Changes included' || 'Pull requests included' }} (${{env.NOW}})
             ${{ steps.build_changelog.outputs.changelog }}
           token: ${{ secrets.GITHUB_TOKEN }}

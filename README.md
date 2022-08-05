@@ -106,12 +106,10 @@ jobs:
       BETA_GOOGLE_AUTH: ${{ secrets.BETA_GOOGLE_AUTH }}
 ```
 
-### Release builder
+### Sample release builder
 ```yaml
 on:
-  # Any pull request merged into master (hotfixes, releases)
-  #   should publish the corresponding github release + git tag
-  push:
+  push: # Any pull request merged into master (hotfixes, releases or direct pushes) should publish the corresponding github release + git tag
     branches:
       - main
       - master
@@ -119,14 +117,16 @@ on:
   workflow_dispatch: # build a new release manually (create release branch pointing to master branch)
     inputs:
       version_name:
-        # Edit release_builder.json#base_branches to support other branches
-        description: 'Release version name, sample: 1.0.0 (Only "develop" branch is supported)'
+        description: 'Release version name, sample: 1.0.0'
         required: true
 
 name: Create Release
 
 jobs:
   release-builder:
-    uses: reverseretail/shareable-github-workflows/.github/workflows/release_builder.yml@main
+    uses: owen2345/reusable-ci-cd-actions/.github/workflows/release_builder.yml@main
+    with:
+      commit_mode: true
+      create_release_pr: ${{ github.event.inputs && github.event.inputs.version_name || '' }}
 
 ```
