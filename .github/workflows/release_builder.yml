@@ -121,7 +121,12 @@ jobs:
         if: always()
 
       # ****** Create Release PR
-      - name: Create Pull Request
+      - name: Update changelog file
+        run: echo "$(echo -e "# Release $NEW_VERSION($(date +%F))\n$CHANGES\n"; cat CHANGELOG.md)" > CHANGELOG.md
+        if: ${{ inputs.create_release_pr != '' }}
+        env:
+          CHANGES: ${{steps.build_changelog.outputs.changelog}}
+      - name: Create Release Pull Request
         uses: gr2m/create-or-update-pull-request-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
