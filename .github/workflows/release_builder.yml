@@ -72,7 +72,7 @@ jobs:
         env:
           MERGE_MSG: ===${{github.event.head_commit.message}}===
         run: |
-          IFS=$'\n' read -d "\034" -r -a array <<< "$MERGE_MSG" &&
+          array=($(echo $MERGE_MSG | tr "," "\n")) &&
           result=${array[0]} &&
           echo "$result"
         if: ${{ env.A_RELEASE_MERGE == 'true' && !env.NEW_VERSION }}
