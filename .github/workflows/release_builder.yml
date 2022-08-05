@@ -128,9 +128,9 @@ jobs:
           CHANGES: ${{steps.build_changelog.outputs.changelog}}
       - name: Create Release Pull Request
         uses: gr2m/create-or-update-pull-request-action@v1
+        if: ${{ inputs.create_release_pr != '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: ${{ inputs.create_release_pr != '' }}
         with:
           commit-message: Release ${{ env.NEW_VERSION }}
           labels: release
@@ -153,8 +153,9 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           custom_tag: ${{env.NEW_VERSION}}
           tag_prefix: ""
-      - name: Publish the release
+      - name: Publish release
         uses: ncipollo/release-action@v1
+        if: ${{ env.PUBLISH_RELEASE == 'true' }}
         with:
           allowUpdates: true
           name: Release ${{ env.NEW_VERSION }}
