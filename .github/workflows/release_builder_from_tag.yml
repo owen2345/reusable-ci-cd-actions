@@ -64,7 +64,7 @@ jobs:
 
       # ***** Publish release
       - name: Set current
-        run: echo "CURRENT_VERSION=$(date)" >> $GITHUB_ENV
+        run: echo "CURRENT_DATE=$(date)" >> $GITHUB_ENV
 
       - name: Publish release
         uses: ncipollo/release-action@v1
@@ -73,6 +73,6 @@ jobs:
           name: Release ${{ env.CURRENT_VERSION }}
           tag: ${{ env.CURRENT_VERSION }}
           body: |
-            ## ${{ inputs.commit_mode && 'Changes included' || 'Pull requests included' }} (${{env.NOW}})
+            ## ${{ inputs.commit_mode && 'Changes included' || 'Pull requests included' }} (${{env.CURRENT_DATE}})
             ${{ steps.build_changelog.outputs.changelog }}
           token: ${{ secrets.GITHUB_TOKEN }}
