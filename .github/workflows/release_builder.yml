@@ -134,7 +134,7 @@ jobs:
           title: "Release ${{ env.NEW_VERSION }}"
           body: |
             # Release ${{ env.NEW_VERSION }}
-            ## ${{ inputs.commit_mode && 'Changes included' || 'Pull requests included' }}
+            Changes included
             ${{ steps.build_changelog.outputs.changelog }}
 
             ## Manual action
