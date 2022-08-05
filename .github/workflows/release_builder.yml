@@ -1,35 +1,48 @@
 name: Create Release
 on:
-#  # Any pull request merged into master (hotfixes, releases)
-#  #   should publish the corresponding github release + git tag
-#  push:
+# release.yml
+#on:
+#  push: # Any pull request merged into master (hotfixes, releases or direct pushes) should publish the corresponding github release + git tag
 #    branches:
 #      - main
 #      - master
-
+#
 #  workflow_dispatch: # build a new release manually (create release branch pointing to master branch)
 #    inputs:
 #      version_name:
-#        # Edit release_builder.json#base_branches to support other branches
-#        description: 'Release version name, sample: 1.0.0 (Only "develop" branch is supported)'
+#        description: 'Release version name, sample: 1.0.0'
 #        required: true
+#
+#name: Create Release
+#
+#jobs:
+#  release-builder:
+#    uses: owen2345/reusable-ci-cd-actions/.github/workflows/release_builder.yml@main
+#    with:
+#      commit_mode: true
+#      create_release_pr: ${{ github.event.inputs && github.event.inputs.version_name || '' }}
 
-  # Make workflow reusable
+
   workflow_call:
     inputs:
       commit_mode:
         type: boolean
         required: false
         default: false
+      create_release_pr:
+        type: string
+        required: false
+        default: ''
 
 jobs:
   build:
     name: "Create release"
     runs-on: ubuntu-latest
     env:
+      # Sample: Merge pull request #2602 from MyNamespace/release/1.1.0
+      A_RELEASE_MERGE: ${{ github.event.head_commit && contains(github.event.head_commit.message, '/release/') && contains(github.event.head_commit.message, 'Merge pull request') }}
       PUBLISH_RELEASE: ${{ github.event_name == 'push' }}
-      A_RELEASE_MERGE: ${{ github.event.head_commit && contains(github.event.head_commit.message, format('from {0}/{1}/', github.repository_owner, 'release')) }}
-    #if: github.event.inputs || ( github.event.head_commit && startsWith(github.event.head_commit.message, 'Merge pull request') )
+    if: inputs.create_release_pr != '' || github.event.head_commit
 
     steps:
       - name: Checkout code
@@ -37,24 +50,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # calculate versions
-      - name: Calculate new version from release candidate (creating release)
-        run: |
-          result="${{ github.event.inputs.version_name }}" &&
-          echo "NEW_VERSION=$result" >> $GITHUB_ENV
-        if: ${{ github.event.inputs }}
-
-      # Sample: Merge pull request #36 from ReverseRetail/release/0.2.0\n\nRelease 0.2.0
-      - name: Calculate new version from release candidate (when release was merged)
-        env:
-          MERGE_MSG: ${{github.event.head_commit.message}}
-        run: |
-          IFS="\n\n" read -r -a array <<< "$MERGE_MSG" &&
-          result=${array[0]} &&
-          IFS="/" read -r -a array <<< "$result" &&
-          echo "NEW_VERSION=${array[-1]}" >> $GITHUB_ENV
-        if: ${{ env.A_RELEASE_MERGE == 'true' && !env.NEW_VERSION }}
-
+      # ******* calculate versions
       - name: Detect current version
         run: |
           if [[ "$(git tag | wc -l | sed 's/^ *//g')" = '0' ]]
@@ -65,33 +61,46 @@ jobs:
           fi
           echo "CURRENT_VERSION=$last_tag" >> $GITHUB_ENV
 
-      - name: Calculate new version from current tag (when hotfix was merged)
+      - name: Calculate new version from release candidate (creating release)
+        env:
+          ENTERED_VERSION: ${{ inputs.create_release_pr }}
+        run: echo "NEW_VERSION=$ENTERED_VERSION" >> $GITHUB_ENV
+        if: ${{ inputs.create_release_pr != '' }}
+
+      # Sample: Merge pull request #36 from owen2345/release/0.2.0\n\nRelease 0.2.0
+      - name: Calculate new version from release candidate (when release was merged)
+        env:
+          MERGE_MSG: ${{github.event.head_commit.message}}
+        run: |
+          IFS="\n\n" read -r -a array <<< "$MERGE_MSG" &&
+          result=${array[0]} &&
+          IFS="/" read -r -a array <<< "$result" &&
+          echo "NEW_VERSION=${array[-1]}" >> $GITHUB_ENV
+        if: ${{ env.A_RELEASE_MERGE == 'true' && !env.NEW_VERSION }}
+
+      - name: Calculate new version using current version (when pushed changes to master or merged hotfixes)
         env:
           CURRENT_VERSION: ${{ env.CURRENT_VERSION }}
         run: |
           IFS='.' read -r -a array <<< "$CURRENT_VERSION" &&
           result="${array[0]:-0}.${array[1]:-0}.$(expr "${array[2]:-0}" + 1)"  &&
           echo "NEW_VERSION=$result" >> $GITHUB_ENV
-        if: ${{ env.A_RELEASE_MERGE != 'true' && !env.NEW_VERSION }}
+        if: ${{ !env.NEW_VERSION }}
+      # ******* end calculate versions
 
-      - name: Create temp git tag (draft)
+
+      # ***** generating changelogs
+      - name: Download release builder config (Fix missing config file)
+        run: |
+          sudo apt-get install curl -y
+          curl https://raw.githubusercontent.com/owen2345/reusable-ci-cd-actions/main/.github/workflows/release_builder.json --output .github/workflows/release_builder.json
+
+      - name: Create temp git tag
         run: |
           git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
           git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
           git tag -a $NEW_VERSION.draft -m "Release $NEW_VERSION (draft)"
           git push --tags
-
-      # building release
-      - name: Download release builder config (Fix missing config file)
-        run: |
-          sudo apt-get install curl -y
-          curl https://raw.githubusercontent.com/owen2345/reusable-ci-cd-actions/main/.github/workflows/release_builder.json --output .github/workflows/release_builder.json
-#      - name: "Generate release changelog"
-#        id: build_changelog
-#        uses: heinrichreimer/github-changelog-generator-action@v2.3
-#        sinceTag: ${{env.CURRENT_VERSION}}
-#        with:
-#          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Build Changelog"
         id: build_changelog
@@ -107,94 +116,45 @@ jobs:
       - name: Remove downloaded builder config (fix)
         run: rm -f .github/workflows/release_builder.json
 
-      - name: Update changelog file
-        run: echo "$(echo -e "# Release $NEW_VERSION($(date +%F))\n$CHANGES\n"; cat CHANGELOG.md)" > CHANGELOG.md
-        if: ${{ env.PUBLISH_RELEASE == 'false' }}
-        env:
-          CHANGES: ${{steps.build_changelog.outputs.changelog}}
-
-      - name: Generate Changelog2
-        uses: scottbrenner/generate-changelog-action@v1.3.3
-        id: Changelog
-        with:
-          from-tag: ${{env.CURRENT_VERSION}}
-          to-tag: ${{env.NEW_VERSION}}.draft
-
-      - name: print changes
-        run: "echo $CHANGES==========$CHANGES2"
-        env:
-          CHANGES2: ${{ steps.Changelog.outputs.changelog }}
-          CHANGES: ${{steps.build_changelog.outputs.changelog}}
-#      - name: Create Pull Request
-#        id: cpr
-#        uses: peter-evans/create-pull-request@v4
-#        if: ${{ env.PUBLISH_RELEASE == 'false' }}
-#        with:
-#          commit-message: Release ${{ env.NEW_VERSION }}
-#          labels: release
-#          title: "Release ${{ env.NEW_VERSION }}"
-#          base: ${{ github.head.repo.default_branch }}
-#          branch: "release/${{ env.NEW_VERSION }}"
-#          delete-branch: true
-#          assignees: "${{github.actor}}"
-#          body: |
-#            # Release ${{ env.NEW_VERSION }}
-#            ## Included Pull Requests
-#            ${{ steps.build_changelog.outputs.changelog }}
-#      - name: Create Pull Request
-#        id: cpr
-#        uses: gr2m/create-or-update-pull-request-action@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        if: ${{ env.PUBLISH_RELEASE == 'false' }}
-#        with:
-#          commit-message: Release ${{ env.NEW_VERSION }}
-#          labels: release
-#          branch: "release/${{ env.NEW_VERSION }}"
-#          assignees: "${{github.actor}}"
-#          title: "Release ${{ env.NEW_VERSION }}"
-#          body: |
-#            # Release ${{ env.NEW_VERSION }}
-#            ## Included Pull Requests
-#            ${{ steps.build_changelog.outputs.changelog }}
-#
-#      # PRs created by github workflows can not run automatically: https://github.com/peter-evans/create-pull-request/issues/48
-#      - name: Post release message
-#        uses: actions/github-script@v6
-#        env:
-#          PULL_REQUEST_ID: ${{steps.cpr.outputs.pull-request-number}}
-#          MESSAGE: |
-#            **Pull requests created by workflows can not automatically run the PR tests. To fix this issue, add an empty commit like:** `git checkout release/${{ env.NEW_VERSION }} && git commit --allow-empty -m 'Enable PR workflows' && git push`
-#        with:
-#          script: |
-#            github.rest.issues.createComment({
-#              issue_number: process.env.PULL_REQUEST_ID,
-#              owner: context.repo.owner,
-#              repo: context.repo.repo,
-#              body: process.env.MESSAGE
-#            })
-#        if: ${{ env.PUBLISH_RELEASE == 'false' && steps.cpr.outputs.pull-request-number }}
-#
-#      # Publish release
-#      - name: Publish git tag
-#        uses: mathieudutour/github-tag-action@v5.6
-#        if: ${{ env.PUBLISH_RELEASE == 'true' }}
-#        with:
-#          github_token: ${{ secrets.GITHUB_TOKEN }}
-#          custom_tag: ${{env.NEW_VERSION}}
-#          tag_prefix: ""
-#      - name: Publish github release
-#        uses: actions/create-release@latest
-#        if: ${{ env.PUBLISH_RELEASE == 'true' }}
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          tag_name: ${{ env.NEW_VERSION }}
-#          release_name: Release ${{ env.NEW_VERSION }}
-#          body: ${{ steps.build_changelog.outputs.changelog }}
-#          draft: false
-#          prerelease: false
-
-      - name: remove temp git tag (draft)
+      - name: remove temp git tag
         run: git push --delete origin $NEW_VERSION.draft
         if: always()
+
+      # ****** Create Release PR
+      - name: Create Pull Request
+        uses: gr2m/create-or-update-pull-request-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ inputs.create_release_pr != '' }}
+        with:
+          commit-message: Release ${{ env.NEW_VERSION }}
+          labels: release
+          branch: "release/${{ env.NEW_VERSION }}"
+          assignees: "${{github.actor}}"
+          title: "Release ${{ env.NEW_VERSION }}"
+          body: |
+            # Release ${{ env.NEW_VERSION }}
+            ## ${{ inputs.commit_mode && "Changes included" || "Pull requests included" }}
+            ${{ steps.build_changelog.outputs.changelog }}
+
+            ## Manual action
+            PRs created by github workflows can not run corresponding actions like tests automatically: https://github.com/peter-evans/create-pull-request/issues/48
+
+      # ***** Publish release
+      - name: Publish git tag
+        uses: mathieudutour/github-tag-action@v5.6
+        if: ${{ env.PUBLISH_RELEASE == 'true' }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{env.NEW_VERSION}}
+          tag_prefix: ""
+      - name: Publish the release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          name: Release ${{ env.NEW_VERSION }}
+          tag: ${{ env.NEW_VERSION }}
+          body: |
+            ## ${{ inputs.commit_mode && "Changes included" || "Pull requests included" }}
+            ${{ steps.build_changelog.outputs.changelog }}
+          token: ${{ secrets.GITHUB_TOKEN }}

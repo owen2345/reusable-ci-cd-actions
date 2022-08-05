@@ -2,11 +2,19 @@
   "categories": [
     {
       "title": "## Features",
-      "labels": ["Status: ready for review", "feat:", "feature:", "Feat:"]
+      "labels": ["feat:", "feature:", "Feat:"]
     },
     {
       "title": "## Fixes",
       "labels": ["Fix:", "fix:"]
+    },
+    {
+      "title": "## Documentation",
+      "labels": ["doc:", "docs:", "Doc:", "Docs:"]
+    },
+    {
+      "title": "## User Interface",
+      "labels": ["ui:", "UI:"]
     },
     {
       "title": "## Other changes",
