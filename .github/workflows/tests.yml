@@ -1,9 +1,23 @@
+#name: App tests
+#on:
+#  push:
+#    branches:
+#      - main
+#      - master
+#  pull_request:
+#
+#jobs:
+#  app-tests:
+#    uses: owen2345/reusable-ci-cd-actions/.github/workflows/tests.yml@main
+#    with:
+#      prepare_db_cmd: null
+#      copy_env: false
+#      run_rubocop: true
+#      rspec_cmd: 'bundle exec rspec'
+
+
 name: App tests
 on:
-## Run tests for all pull requests
-#  pull_request:
-
-  # Make workflow reusable
   workflow_call:
     inputs:
       copy_env:
