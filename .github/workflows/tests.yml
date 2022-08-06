@@ -70,6 +70,8 @@ jobs:
         if: inputs.copy_env
       - name: Copy DB Config
         run: cp config/database-example.yml config/database.yml
+        env:
+          COPY_DB_YML: ${{inputs.copy_db_yml}}
         if: inputs.copy_db_yml
       - name: Cancel previous Workflow Actions
         uses: styfle/cancel-workflow-action@0.6.0
