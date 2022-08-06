@@ -41,7 +41,7 @@ on:
       publish_coverage:
         type: boolean
         required: false
-        default: true
+        default: false
       min_coverage:
         type: number
         required: false
