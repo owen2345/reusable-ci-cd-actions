@@ -1,8 +1,12 @@
 # shareable-github-workflows
-This is a repository to host shareable github workflows for CI and CD.
+This is a repository to host shareable github workflows for CI and CD for Ruby/Rails applications (can be used other languages too).
 
-## Continuous Integration
-Note: The application needs docker-compose configuration to run the CI. All commands below uses the following format: `docker-compose run test /bin/sh -c "$ANY_CMD"`.    
+## Requirements
+The workflows expect for a containerized applications (docker-compose with `test` service) to run something like: 
+`docker-compose run test /bin/sh -c "bundle exec rspec"`    
+Check [this repo](https://github.com/owen2345/rails_app_containerization) to see how to containerize an existent rails application.
+
+## Continuous Integration 
 Features:   
 - Run tests for every pull request in the application
 ```yaml
@@ -40,7 +44,7 @@ Features:
 - The ability to manually deploy any branch to any environment
   <img src="docs/cd-manually.png" alt="Deploy any branch" width="100%" />
 - Run production deployment when merged changes into Master branch, such as release candidate, hotfix
-- Run stating deployment when tests passed successfully on release candidate branches
+- Run stating deployment when tests passed successfully on release candidate branches (`release/*`)
 ```yml
 name: Continous Deployment
 on:
