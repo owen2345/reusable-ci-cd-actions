@@ -28,7 +28,7 @@ Features:
         eslint_cmd: yarn eslint # Run eslint code style check (default empty)
 
         # test coverages (requires simplecov configuration https://github.com/simplecov-ruby/simplecov)
-        publish_coverage: true # Publish coverage report as an github action artifact (default false)
+        publish_coverage: false # Publish coverage report as an github action artifact (default false)
         min_coverage: 90 # Minimum coverage percentage required to pass the tests (default 90)
         codeclimate_key: "my-key" # Codeclimate API key used to publish coverage report to codeclimate (default empty)
 ```  
