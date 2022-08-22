@@ -35,11 +35,20 @@ jobs:
         with:
           key: CD-docker-cache-${{ hashFiles('Dockerfile', 'Gemfile.lock') }}
 
+      - name: Calc current version
+        run: |
+          git_hash=$(git rev-parse --verify HEAD || :)
+          default_version=${git_hash:-$(date +%s)}
+          deploy_version=$(git tag --contains $GIT_HASH | head -n 1)
+          deploy_version=${deploy_version:-$default_version}
+          echo "DEPLOY_VERSION=$deploy_version" >> $GITHUB_ENV
+
       - run: sudo gem install kubernetes_helper
       - name: Staging deployment
         env: # Env variable saved in github that contains gcloud credential (json format)
           KB_AUTH_TOKEN: ${{ secrets.BETA_GOOGLE_AUTH }}
           DEPLOY_ENV: ${{ env.STAGING_DEPLOY_ENV }}
+          DEPLOY_VERSION: ${{ env.DEPLOY_VERSION }}
         run: kubernetes_helper run_deployment 'cd.sh'
         if: ${{ env.STAGING_DEPLOY == 'true' }}
 
@@ -47,5 +56,6 @@ jobs:
         env:
           KB_AUTH_TOKEN: ${{ secrets.PROD_GOOGLE_AUTH }}
           DEPLOY_ENV: production
+          DEPLOY_VERSION: ${{ env.DEPLOY_VERSION }}
         run: kubernetes_helper run_deployment 'cd.sh'
         if: ${{ env.PROD_DEPLOY == 'true' }}
