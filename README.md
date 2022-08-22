@@ -10,6 +10,7 @@ Check [this repo](https://github.com/owen2345/rails_app_containerization) to see
 Features:   
 - Run tests for every pull request in the application
 ```yaml
+  # .github/workflows/tests.yml
   name: App tests
   on:
     pull_request: # Run tests for every pull request
@@ -46,6 +47,7 @@ Features:
 - Run production deployment when merged changes into Master branch, such as release candidate, hotfix
 - Run stating deployment when tests passed successfully on release candidate branches (`release/*`)
 ```yml
+# .github/workflows/cd.yml
 name: Continous Deployment
 on:
   # triggered once "App tests" (tests.yml) successfully completed for any release (auto deploy to staging)
@@ -89,6 +91,7 @@ Features:
 Note: The new version (if not generated via "create manually release...") is auto calculated using the last git tag, for example if the current version is `1.0.1`, the new version will be `1.0.2`.   
 
 ```yaml
+# .github/workflows/release_builder.yml
 on:
   push: # Any pull request merged into master (hotfixes, releases or direct pushes) should publish the corresponding github release + git tag
     branches:
@@ -115,6 +118,7 @@ jobs:
 Once pushed a new git tag to github, creates the corresponding release on github with all changes list as the description of the release
 Note: The new version is auto calculated using the last git tag, for example if the current version is `1.0.1`, the new version will be `1.0.2`.
 ```yml
+# .github/workflows/release_builder_from_tag.yml
 name: Create release from tag
 on:
   push:
