@@ -8,7 +8,7 @@ Check [this repo](https://github.com/owen2345/rails_app_containerization) to see
 
 ## Continuous Integration 
 Features:   
-- Run tests for every pull request in the application
+- Run tests for every pull request in the application (supports gitflow and trunk based development)
 ```yaml
   # .github/workflows/tests.yml
   name: App tests
