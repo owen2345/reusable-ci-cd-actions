@@ -116,6 +116,7 @@ jobs:
     with:
       commit_mode: true # If true, then fetches all commit titles from all changes. If false, then fetches only the PR titles from all changes.
       create_release_pr: ${{ github.event.inputs && github.event.inputs.version_name || '' }}
+      slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}  # Sample SLACK_WEBHOOK_URL: https://hooks.slack.com/services/0000/0000/0000 
 ```
 
 ## Release builder from git tags (ideal for ruby gems)

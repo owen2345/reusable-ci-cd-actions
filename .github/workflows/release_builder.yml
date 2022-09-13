@@ -11,6 +11,11 @@ on:
         required: false
         default: ''
 
+      slack_webhook_url:
+        type: string
+        required: false
+        default: ''
+
 jobs:
   build:
     name: "Create release"
@@ -133,6 +138,7 @@ jobs:
           custom_tag: ${{env.NEW_VERSION}}
           tag_prefix: ""
       - name: Publish release
+        id: release
         uses: ncipollo/release-action@v1
         if: ${{ env.PUBLISH_RELEASE == 'true' }}
         with:
@@ -143,3 +149,11 @@ jobs:
             ## ${{ inputs.commit_mode && 'Changes included' || 'Pull requests included' }} (${{env.CURRENT_DATE}})
             ${{ steps.build_changelog.outputs.changelog }}
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notification via Slack
+        if: ${{ env.PUBLISH_RELEASE == 'true' && inputs.slack_webhook_url != '' }}
+        uses: tokorom/action-slack-incoming-webhook@main
+        with:
+          text: "*Release ${{ env.NEW_VERSION }}* (By ${{ github.actor }})\n${{ steps.build_changelog.outputs.changelog }} \n ${{steps.release.outputs.html_url}}"
+        env:
+          INCOMING_WEBHOOK_URL: ${{ inputs.slack_webhook_url }}
