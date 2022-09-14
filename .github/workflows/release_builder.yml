@@ -107,8 +107,10 @@ jobs:
         if: ${{ inputs.create_release_pr != '' }}
         env:
           CHANGES: ${{steps.build_changelog.outputs.changelog}}
-      - uses: bhowell2/github-substring-action
+      - name: Parse changelog for release PR
+        uses: bhowell2/github-substring-action
         id: changelog_pr_adapted
+        if: ${{ inputs.create_release_pr != '' }}
         with:
           value: ${{steps.build_changelog.outputs.changelog}}
           length_from_start: 65000
@@ -155,7 +157,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Notification via Slack
-        if: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: ${{ env.PUBLISH_RELEASE == 'true' && secrets.SLACK_WEBHOOK_URL }}
         uses: tokorom/action-slack-incoming-webhook@main
         with:
           text: "*Release ${{ env.NEW_VERSION }}* (By ${{ github.actor }})\n${{ steps.build_changelog.outputs.changelog }} \n ${{steps.release.outputs.html_url}}"
