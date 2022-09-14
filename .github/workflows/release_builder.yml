@@ -108,12 +108,13 @@ jobs:
         env:
           CHANGES: ${{steps.build_changelog.outputs.changelog}}
       - name: Parse changelog for release PR
-        uses: bhowell2/github-substring-action
+        uses: web3j/substr-action@v1.2
         id: changelog_pr_adapted
         if: ${{ inputs.create_release_pr != '' }}
         with:
           value: ${{steps.build_changelog.outputs.changelog}}
-          length_from_start: 65000
+          start: 0
+          length: 65000
       - name: Create Release Pull Request
         uses: gr2m/create-or-update-pull-request-action@v1
         if: ${{ inputs.create_release_pr != '' }}
@@ -128,7 +129,7 @@ jobs:
           body: |
             # Release ${{ env.NEW_VERSION }}
             ## ${{ inputs.commit_mode && 'Changes included' || 'Pull requests included' }}
-            ${{ steps.changelog_pr_adapted.outputs.substring }}
+            ${{ steps.changelog_pr_adapted.outputs.result }}
 
             ## Manual action
             PRs created by github workflows can not run corresponding actions like tests automatically: https://github.com/peter-evans/create-pull-request/issues/48
