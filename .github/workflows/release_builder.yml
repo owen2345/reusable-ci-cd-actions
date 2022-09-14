@@ -155,7 +155,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Notification via Slack
-        if: ${{ env.PUBLISH_RELEASE == 'true' && secrets.SLACK_WEBHOOK_URL }}
+        if: ${{ secrets.SLACK_WEBHOOK_URL }}
         uses: tokorom/action-slack-incoming-webhook@main
         with:
           text: "*Release ${{ env.NEW_VERSION }}* (By ${{ github.actor }})\n${{ steps.build_changelog.outputs.changelog }} \n ${{steps.release.outputs.html_url}}"
