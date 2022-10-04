@@ -84,8 +84,8 @@ jobs:
           git tag -a $NEW_VERSION.draft -m "Release $NEW_VERSION (draft)"
           git push --tags
 
-      - name: "Build Changelog"
-        id: build_changelog
+      - name: Changelog from PRs
+        id: changelog_prs
         uses: mikepenz/release-changelog-builder-action@v3.1.1
         with:
           configuration: ".github/workflows/release_builder.json"
@@ -94,26 +94,45 @@ jobs:
           commitMode: ${{inputs.commit_mode}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Remove downloaded builder config (fix)
         run: rm -f .github/workflows/release_builder.json
 
+      - name: Changelog from commits
+        id: changelog_commits
+        if: inputs.commit_mode == true
+        run: |
+          MY_STRING=$(git log --pretty=format:"%s ([%cn](https://github.com/%cn) - %h)" $TAG_RANGE)
+          MY_STRING="* ${MY_STRING//'%'/'%25'}"
+          MY_STRING="${MY_STRING//$'\n'/'%0A * '}"
+          MY_STRING="${MY_STRING//$'\r'/'%0D'}"
+          echo "::set-output name=changelog::$MY_STRING"
+        env:
+          TAG_RANGE: ${{env.CURRENT_VERSION}}..${{env.NEW_VERSION}}.draft
       - name: remove temp git tag
         run: git push --delete origin $NEW_VERSION.draft
         if: always()
+      - name: Calc changelog
+        run: |
+          MY_STRING="${CHANGELOG//'%'/'%25'}"
+          MY_STRING="${MY_STRING//$'\n'/'%0A'}"
+          MY_STRING="${MY_STRING//$'\r'/'%0D'}"
+          echo "::set-output name=changelog::$MY_STRING"
+        id: changelog
+        env:
+          CHANGELOG: ${{inputs.commit_mode && steps.changelog_commits.outputs.changelog || steps.changelog_prs.outputs.changelog}}
 
       # ****** Create Release PR
       - name: Update changelog file
         run: echo "$(echo -e "# Release $NEW_VERSION($(date +%F))\n$CHANGES\n"; cat CHANGELOG.md)" > CHANGELOG.md
         if: ${{ inputs.create_release_pr != '' }}
         env:
-          CHANGES: ${{steps.build_changelog.outputs.changelog}}
+          CHANGES: ${{steps.changelog.outputs.changelog}}
       - name: Truncate changelog for release PR
         uses: 2428392/gh-truncate-string-action@v1.1.0
         id: changelog_pr_adapted
         if: ${{ inputs.create_release_pr != '' }}
         with:
-          stringToTruncate: ${{steps.build_changelog.outputs.changelog}}
+          stringToTruncate: ${{steps.changelog.outputs.changelog}}
           maxLength: 65000
       - name: Create Release Pull Request
         uses: gr2m/create-or-update-pull-request-action@v1
@@ -154,11 +173,11 @@ jobs:
           tag: ${{ env.NEW_VERSION }}
           body: |
             ## ${{ inputs.commit_mode && 'Changes included' || 'Pull requests included' }} (${{env.CURRENT_DATE}})
-            ${{ steps.build_changelog.outputs.changelog }}
+            ${{ steps.changelog.outputs.changelog }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Notification via Slack
         if: ${{ env.PUBLISH_RELEASE == 'true' && env.INCOMING_WEBHOOK_URL }}
         uses: tokorom/action-slack-incoming-webhook@main
         with:
-          text: "*${{ github.event.repository.name }}: Release ${{ env.NEW_VERSION }}* (By ${{ github.actor }})\n${{ steps.build_changelog.outputs.changelog }} \n ${{steps.release.outputs.html_url}}"
+          text: "*${{ github.event.repository.name }}: Release ${{ env.NEW_VERSION }}* (By ${{ github.actor }})\n${{ steps.changelog.outputs.changelog }} \n ${{steps.release.outputs.html_url}}"
