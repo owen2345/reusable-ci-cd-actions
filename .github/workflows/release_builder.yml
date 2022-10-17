@@ -86,6 +86,7 @@ jobs:
 
       - name: Changelog from PRs
         id: changelog_prs
+        if: inputs.commit_mode != true
         uses: mikepenz/release-changelog-builder-action@v3.1.1
         with:
           configuration: ".github/workflows/release_builder.json"
@@ -112,12 +113,12 @@ jobs:
         run: git push --delete origin $NEW_VERSION.draft
         if: always()
       - name: Calc changelog
+        id: changelog
         run: |
           MY_STRING="${CHANGELOG//'%'/'%25'}"
           MY_STRING="${MY_STRING//$'\n'/'%0A'}"
           MY_STRING="${MY_STRING//$'\r'/'%0D'}"
           echo "::set-output name=changelog::$MY_STRING"
-        id: changelog
         env:
           CHANGELOG: ${{inputs.commit_mode && steps.changelog_commits.outputs.changelog || steps.changelog_prs.outputs.changelog}}
 

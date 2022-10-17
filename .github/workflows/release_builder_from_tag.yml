@@ -48,8 +48,9 @@ jobs:
           sudo apt-get install curl -y
           curl https://raw.githubusercontent.com/owen2345/reusable-ci-cd-actions/main/.github/workflows/release_builder.json --output .github/workflows/release_builder.json
 
-      - name: "Build Changelog"
-        id: build_changelog
+      - name: Changelog from PRs
+        id: changelog_prs
+        if: inputs.commit_mode != true
         uses: mikepenz/release-changelog-builder-action@v3.1.1
         with:
           configuration: ".github/workflows/release_builder.json"
@@ -61,6 +62,27 @@ jobs:
 
       - name: Remove downloaded builder config (fix)
         run: rm -f .github/workflows/release_builder.json
+
+      - name: Changelog from commits
+        id: changelog_commits
+        if: inputs.commit_mode == true
+        run: |
+          MY_STRING=$(git log --pretty=format:"%s ([%cn](https://github.com/%cn) - %h)" $TAG_RANGE)
+          MY_STRING="* ${MY_STRING//'%'/'%25'}"
+          MY_STRING="${MY_STRING//$'\n'/'%0A * '}"
+          MY_STRING="${MY_STRING//$'\r'/'%0D'}"
+          echo "::set-output name=changelog::$MY_STRING"
+        env:
+          TAG_RANGE: ${{env.PREVIOUS_VERSION}}..${{env.CURRENT_VERSION}}
+      - name: Calc changelog
+        id: changelog
+        run: |
+          MY_STRING="${CHANGELOG//'%'/'%25'}"
+          MY_STRING="${MY_STRING//$'\n'/'%0A'}"
+          MY_STRING="${MY_STRING//$'\r'/'%0D'}"
+          echo "::set-output name=changelog::$MY_STRING"
+        env:
+          CHANGELOG: ${{inputs.commit_mode && steps.changelog_commits.outputs.changelog || steps.changelog_prs.outputs.changelog}}
 
       # ***** Publish release
       - name: Set current
@@ -74,5 +96,5 @@ jobs:
           tag: ${{ env.CURRENT_VERSION }}
           body: |
             ## ${{ inputs.commit_mode && 'Changes included' || 'Pull requests included' }} (${{env.CURRENT_DATE}})
-            ${{ steps.build_changelog.outputs.changelog }}
+            ${{ steps.changelog.outputs.changelog }}
           token: ${{ secrets.GITHUB_TOKEN }}
