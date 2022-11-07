@@ -15,7 +15,7 @@ on:
       prepare_db_cmd:
         type: string
         required: false
-        default: bundle exec rails db:setup
+        default: yarn install 2> /dev/null && bundle install && bundle exec rails db:setup
       rspec_cmd:
         type: string
         required: false

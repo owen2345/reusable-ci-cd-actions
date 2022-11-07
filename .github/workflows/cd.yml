@@ -24,13 +24,15 @@ jobs:
         with:
           ref: ${{ env.DEPLOY_BRANCH }}
       - name: Cancel previous Workflow Actions
-        uses: styfle/cancel-workflow-action@0.6.0
+        uses: styfle/cancel-workflow-action@0.9.1
         with:
           access_token: ${{ github.token }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
-      - uses: satackey/action-docker-layer-caching@v0.0.11
+
+      # uses: satackey/action-docker-layer-caching@v0.0.11 (outdated for deprecations)
+      - uses: jpribyl/action-docker-layer-caching@v0.1.0
         continue-on-error: true
         with:
           key: CD-docker-cache-${{ hashFiles('Dockerfile', 'Gemfile.lock') }}
