@@ -35,7 +35,7 @@ jobs:
       - uses: jpribyl/action-docker-layer-caching@v0.1.0
         continue-on-error: true
         with:
-          key: CD-docker-cache-${{ hashFiles('Dockerfile', 'Gemfile.lock') }}
+          key: CD-docker-cache-${{ hashFiles('Dockerfile') }}
 
       - name: Calc current version
         run: |
