@@ -83,11 +83,13 @@ jobs:
 
       - name: download docker-compose cache
         run: docker-compose pull
-      - uses: satackey/action-docker-layer-caching@v0.0.11 # Cache or restore docker cache
+
+      # uses: satackey/action-docker-layer-caching@v0.0.11 (outdated for deprecations)
+      - uses: jpribyl/action-docker-layer-caching@v0.1.0
         continue-on-error: true # Ignore the failure of a step and avoid terminating the job.
         with:
           key: app-cache-${{ hashFiles('Dockerfile') }}
-          restore-keys: app-cache-${{ hashFiles('Dockerfile') }}
+          restore-keys: app-cache-
 
       - name: Prepare backend DB
         env:

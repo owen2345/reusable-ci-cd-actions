@@ -36,6 +36,7 @@ jobs:
         continue-on-error: true
         with:
           key: CD-docker-cache-${{ hashFiles('Dockerfile') }}
+          restore-keys: app-cache-
 
       - name: Calc current version
         run: |
