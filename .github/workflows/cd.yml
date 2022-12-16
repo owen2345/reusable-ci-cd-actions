@@ -46,7 +46,7 @@ jobs:
           deploy_version=${deploy_version:-$default_version}
           echo "DEPLOY_VERSION=$deploy_version" >> $GITHUB_ENV
 
-      - run: "sudo gem install kubernetes_helper -v '1.21.2.pre'"
+      - run: "sudo gem install kubernetes_helper"
       - name: Staging deployment
         env: # Env variable saved in github that contains gcloud credential (json format)
           KB_AUTH_TOKEN: ${{ secrets.BETA_GOOGLE_AUTH }}
