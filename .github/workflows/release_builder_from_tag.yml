@@ -97,4 +97,6 @@ jobs:
           body: |
             ## ${{ inputs.commit_mode && 'Changes included' || 'Pull requests included' }} (${{env.CURRENT_DATE}})
             ${{ steps.changelog.outputs.changelog }}
+            
+            **Full Changelog**: https://github.com/${{github.repository}}/compare/${{env.PREVIOUS_VERSION}}...${{env.CURRENT_VERSION}}
           token: ${{ secrets.GITHUB_TOKEN }}
