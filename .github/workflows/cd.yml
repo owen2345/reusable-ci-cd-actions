@@ -2,6 +2,11 @@ name: "Continuous Deployment"
 on:
   # Make workflow reusable
   workflow_call:
+    inputs:
+      debug:
+        type: boolean
+        required: false
+        default: false
     secrets:
       PROD_GOOGLE_AUTH:
         required: true
@@ -62,3 +67,7 @@ jobs:
           DEPLOY_VERSION: ${{ env.DEPLOY_VERSION }}
         run: kubernetes_helper run_deployment 'cd.sh'
         if: ${{ env.PROD_DEPLOY == 'true' }}
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: inputs.debug && always()
