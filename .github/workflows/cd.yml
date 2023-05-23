@@ -40,11 +40,6 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
         if: inputs.service == 'gcloud'
-      - name: Set up Doctl (digital ocean)
-        uses: digitalocean/action-doctl@v2
-        with:
-          token: ${{ secrets.PROD_GOOGLE_AUTH }}
-        if: inputs.service == 'digital_ocean'
 
       # uses: satackey/action-docker-layer-caching@v0.0.11 (outdated for deprecations)
       - uses: jpribyl/action-docker-layer-caching@v0.1.0
