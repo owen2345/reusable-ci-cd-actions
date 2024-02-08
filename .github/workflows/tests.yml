@@ -89,7 +89,7 @@ jobs:
         continue-on-error: true # Ignore the failure of a step and avoid terminating the job.
         with:
           key: app-cache-${{ hashFiles('Dockerfile') }}
-          restore-keys: app-cache-
+          restore-keys: app-cache-{{ hashFiles('Dockerfile' }}
 
       - name: Prepare backend DB
         env:
