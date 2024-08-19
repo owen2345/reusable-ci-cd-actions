@@ -81,6 +81,11 @@ jobs:
           path: |
             /usr/local/bundle/
 
+      - name: Install Docker Compose
+        uses: KengoTODA/actions-setup-docker-compose@v1
+        with:
+          version: '2.27.3'
+      
       - name: download docker-compose cache
         run: docker-compose pull
 
