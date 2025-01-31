@@ -11,6 +11,11 @@ on:
         type: string
         required: false
         default: 'gcloud'
+      timeout:
+        description: 'Timeout for the deployment job in minutes'
+        required: false
+        default: 10000
+        type: number
     secrets:
       PROD_GOOGLE_AUTH:
         required: true
@@ -24,6 +29,7 @@ jobs:
   deployment:
     permissions: write-all
     runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout }}
     if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
       github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
     env:
@@ -60,7 +66,7 @@ jobs:
         if: steps.check_ssh_key.outputs.has_ssh_key == 'true'
 
       # uses: satackey/action-docker-layer-caching@v0.0.11 (outdated for deprecations)
-      - uses: jpribyl/action-docker-layer-caching@v0.1.0
+      - uses: jpribyl/action-docker-layer-caching@v0.1.1
         continue-on-error: true
         with:
           key: CD-docker-cache-${{ hashFiles('Dockerfile') }}
