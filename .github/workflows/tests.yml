@@ -82,7 +82,7 @@ jobs:
             /usr/local/bundle/
 
       - name: download docker-compose cache
-        run: docker-compose pull
+        run: docker compose pull
 
       # uses: satackey/action-docker-layer-caching@v0.0.11 (outdated for deprecations)
       - uses: jpribyl/action-docker-layer-caching@v0.1.0
@@ -94,27 +94,27 @@ jobs:
       - name: Prepare backend DB
         env:
           ACTION_CMD: ${{ inputs.prepare_db_cmd }}
-        run: docker-compose run test /bin/sh -c "sleep 5 && $ACTION_CMD"
+        run: docker compose run test /bin/sh -c "sleep 5 && $ACTION_CMD"
         if: inputs.prepare_db_cmd
 
       - name: Check frontend tests
         env:
           TESTS_CMD: ${{ inputs.frontend_tests_cmd }}
-        run: docker-compose run test /bin/sh -c "$TESTS_CMD"
+        run: docker compose run test /bin/sh -c "$TESTS_CMD"
         if: inputs.frontend_tests_cmd != ''
 
       - name: Check backend tests
         env:
           TESTS_CMD: ${{ inputs.rspec_cmd }}
-        run: docker-compose run test /bin/sh -c "$TESTS_CMD"
+        run: docker compose run test /bin/sh -c "$TESTS_CMD"
         if: inputs.rspec_cmd != ''
 
       - name: Code style (Backend)
-        run: docker-compose run test /bin/sh -c "bundle exec rubocop"
+        run: docker compose run test /bin/sh -c "bundle exec rubocop"
         if: inputs.run_rubocop
 
       - name: Code style (Frontend)
-        run: docker-compose run test /bin/sh -c "$ESLINT_CMD"
+        run: docker compose run test /bin/sh -c "$ESLINT_CMD"
         env:
           ESLINT_CMD: ${{ inputs.eslint_cmd }}
         if: inputs.eslint_cmd != ''
@@ -137,7 +137,7 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ inputs.codeclimate_key }}
         run: |
-          docker-compose run test bash -c "
+          docker compose run test bash -c "
             apt-get install wget -y &&
             wget -O ./cc-test-reporter https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 &&  chmod +x ./cc-test-reporter &&
             ./cc-test-reporter format-coverage -t simplecov -o coverage/codeclimate.json &&
