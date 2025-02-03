@@ -21,13 +21,9 @@ on:
         required: true
       BETA_GOOGLE_AUTH:
         required: true
-      SSH_PRIVATE_KEY:
-        required: false
-        description: 'SSH private key to access remote server'
 
 jobs:
   deployment:
-    permissions: write-all
     runs-on: ubuntu-latest
     timeout-minutes: ${{ inputs.timeout }}
     if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
@@ -38,14 +34,6 @@ jobs:
       STAGING_DEPLOY_ENV: ${{github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_env || 'beta'}}
       DEPLOY_BRANCH: ${{github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.ref}}
     steps:
-      - name: Check if SSH_PRIVATE_KEY is set
-        id: check_ssh_key
-        run: |
-          if [ -n "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
-            echo "::set-output name=has_ssh_key::true"
-          else
-            echo "::set-output name=has_ssh_key::false"
-          fi
       # common steps
       - uses: actions/checkout@v2
         with:
@@ -58,12 +46,6 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
         if: inputs.service == 'gcloud'
-
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-        if: steps.check_ssh_key.outputs.has_ssh_key == 'true'
 
       # uses: satackey/action-docker-layer-caching@v0.0.11 (outdated for deprecations)
       - uses: jpribyl/action-docker-layer-caching@v0.1.1
@@ -86,7 +68,6 @@ jobs:
           KB_AUTH_TOKEN: ${{ secrets.BETA_GOOGLE_AUTH }}
           DEPLOY_ENV: ${{ env.STAGING_DEPLOY_ENV }}
           DEPLOY_VERSION: ${{ env.DEPLOY_VERSION }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: kubernetes_helper run_deployment 'cd.sh'
         if: ${{ env.STAGING_DEPLOY == 'true' }}
 
@@ -95,7 +76,6 @@ jobs:
           KB_AUTH_TOKEN: ${{ secrets.PROD_GOOGLE_AUTH }}
           DEPLOY_ENV: production
           DEPLOY_VERSION: ${{ env.DEPLOY_VERSION }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: kubernetes_helper run_deployment 'cd.sh'
         if: ${{ env.PROD_DEPLOY == 'true' }}
 
