@@ -82,21 +82,29 @@ jobs:
 
       - run: "sudo gem install kubernetes_helper"
       - name: Staging deployment
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 40
+          max_attempts: 3
+          command: kubernetes_helper run_deployment 'cd.sh'
         env: # Env variable saved in github that contains gcloud credential (json format)
           KB_AUTH_TOKEN: ${{ secrets.BETA_GOOGLE_AUTH }}
           DEPLOY_ENV: ${{ env.STAGING_DEPLOY_ENV }}
           DEPLOY_VERSION: ${{ env.DEPLOY_VERSION }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: kubernetes_helper run_deployment 'cd.sh'
         if: ${{ env.STAGING_DEPLOY == 'true' }}
 
       - name: Production deployment
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 40
+          max_attempts: 3
+          command: kubernetes_helper run_deployment 'cd.sh'
         env:
           KB_AUTH_TOKEN: ${{ secrets.PROD_GOOGLE_AUTH }}
           DEPLOY_ENV: production
           DEPLOY_VERSION: ${{ env.DEPLOY_VERSION }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: kubernetes_helper run_deployment 'cd.sh'
         if: ${{ env.PROD_DEPLOY == 'true' }}
 
       - name: Setup tmate session

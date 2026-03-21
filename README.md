@@ -3,7 +3,7 @@ This is a repository to host shareable github workflows for CI and CD for Ruby/R
 
 ## Requirements
 The workflows expect for a containerized application (docker-compose with `test` service) to run the corresponding actions, something like: 
-`docker-compose run test /bin/sh -c "bundle exec rspec"`    
+`docker compose run test /bin/sh -c "bundle exec rspec"`    
 Check [this repo](https://github.com/owen2345/rails_app_containerization) to see how to containerize an existent rails application.
 
 ## Continuous Integration 
