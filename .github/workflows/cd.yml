@@ -93,12 +93,14 @@ jobs:
           DEPLOY_ENV: ${{ env.STAGING_DEPLOY_ENV }}
           DEPLOY_VERSION: ${{ env.DEPLOY_VERSION }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
         if: ${{ env.STAGING_DEPLOY == 'true' }}
 
       - name: Production deployment
         uses: nick-fields/retry@v3
         with:
-          timeout_minutes: 40
+          timeout_minutes: 50
           max_attempts: 3
           command: kubernetes_helper run_deployment 'cd.sh'
         env:
@@ -106,6 +108,8 @@ jobs:
           DEPLOY_ENV: production
           DEPLOY_VERSION: ${{ env.DEPLOY_VERSION }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
         if: ${{ env.PROD_DEPLOY == 'true' }}
 
       - name: Setup tmate session
